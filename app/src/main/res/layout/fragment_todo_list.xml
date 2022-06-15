@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".TodoListFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:text="Todo List"
+        android:textSize="28dp"
+        android:layout_marginBottom="80dp" />
+
+    <TextView
+        android:id="@+id/todo_item_1"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:text="Todo item 1"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+    />
+
+    <TextView
+        android:id="@+id/todo_item_2"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:text="Todo item 2"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+        />
+
+    <TextView
+        android:id="@+id/todo_item_3"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:text="Todo item 3"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+        />
+
+    <TextView
+        android:id="@+id/todo_item_4"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:text="Todo item 4"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+        />
+
+    <TextView
+        android:id="@+id/todo_item_5"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:text="Todo item 5"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+        />
+
+</LinearLayout>
