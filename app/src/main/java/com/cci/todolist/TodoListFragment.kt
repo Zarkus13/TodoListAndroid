@@ -1,13 +1,17 @@
 package com.cci.todolist
 
+import android.content.Context
 import android.os.Bundle
 import android.transition.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,80 +19,74 @@ import com.cci.todolist.databinding.FragmentTodoListBinding
 import com.cci.todolist.tasks.Task
 import com.cci.todolist.tasks.TaskViewHolder
 import com.cci.todolist.tasks.TasksAdapter
+import com.cci.todolist.tasks.TasksViewModel
+import java.io.BufferedReader
+import java.io.FileOutputStream
+import java.io.FileReader
 import java.util.*
 
 class TodoListFragment : Fragment() {
-    private var _binding: FragmentTodoListBinding? = null
-    private lateinit var binding: FragmentTodoListBinding
+  private var _binding: FragmentTodoListBinding? = null
+  private lateinit var binding: FragmentTodoListBinding
 
-    private var tasksCheckedNb = 0
-    private var tasksSelectedIds: List<Int> = emptyList()
+  private val tasksViewModel: TasksViewModel by viewModels()
 
-    private var tasks = listOf<Task>(
-        Task(0, "Manger", Date()),
-        Task(1, "Boire", Date()),
-        Task(2, "Dormir", Date()),
-        Task(3, "Manger", Date()),
-        Task(4, "Se brosser les dents", Date()),
-        Task(5, "Regarder Netflix", Date())
-    )
+  override fun onCreateView(
+    inflater: LayoutInflater, container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    _binding = FragmentTodoListBinding.inflate(inflater, container, false)
+    binding = _binding!!
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentTodoListBinding.inflate(inflater, container, false)
-        binding = _binding!!
+    return _binding?.root
+  }
 
-        return _binding?.root
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    binding.tasksListRecyclerView.layoutManager =
+      LinearLayoutManager(context)
+
+    val adapter = TasksAdapter(emptyList(), selectTask)
+    binding.tasksListRecyclerView.adapter = adapter
+
+    binding.deleteButton.setOnClickListener {
+      deleteTasks()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.tasksListRecyclerView.layoutManager =
-            LinearLayoutManager(context)
-
-        val adapter = TasksAdapter(tasks, selectTask)
-        binding.tasksListRecyclerView.adapter = adapter
-
-        binding.deleteButton.setOnClickListener {
-            deleteTasks(adapter)
-        }
+    tasksViewModel.tasks.observe(viewLifecycleOwner) { tasks ->
+      adapter.updateTasks(tasks)
     }
+  }
 
-//    fun selectTask(checked: Boolean) {
-    val selectTask = { checked: Boolean, taskId: Int ->
-        if (checked)
-            this.tasksSelectedIds = this.tasksSelectedIds.plus(taskId)
-        else
-            this.tasksSelectedIds = this.tasksSelectedIds.minus(taskId)
+  //    fun selectTask(checked: Boolean) {
+  val selectTask = { checked: Boolean, taskId: Int ->
+    if (checked)
+      tasksViewModel.addSelectedTaskId(taskId)
+    else
+      tasksViewModel.removeSelectedTaskId(taskId)
 
-        binding.deleteButton.text =
-            "Supprimer " + this.tasksSelectedIds.size + " tâches"
+    binding.deleteButton.text =
+      "Supprimer " + tasksViewModel.getTasksSelectedIdsSize() + " tâches"
 
-        binding.deleteButton.visibility =
-            if (this.tasksSelectedIds.size > 0)
-                View.VISIBLE
-            else
-                View.INVISIBLE
-    }
+    binding.deleteButton.visibility =
+      if (tasksViewModel.getTasksSelectedIdsSize() > 0)
+        View.VISIBLE
+      else
+        View.INVISIBLE
+  }
 
-    fun deleteTasks(tasksAdapter: TasksAdapter) {
-        this.tasks = this.tasks.filterNot { task ->
-            this.tasksSelectedIds.contains(task.id)
-        }
+  fun deleteTasks() {
+    tasksViewModel.deleteSelectedTasks()
 
-        tasksAdapter.updateTasks(this.tasks)
+    binding.deleteButton.visibility = View.INVISIBLE
 
-        binding.deleteButton.visibility = View.INVISIBLE
+    tasksViewModel.emptySelectedTasks()
+  }
 
-        this.tasksSelectedIds = emptyList()
-    }
+  override fun onDestroyView() {
+    super.onDestroyView()
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-
-        _binding = null
-    }
+    _binding = null
+  }
 }
