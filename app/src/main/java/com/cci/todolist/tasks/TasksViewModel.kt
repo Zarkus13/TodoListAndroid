@@ -17,15 +17,31 @@ class TasksViewModel(application: Application): AndroidViewModel(application) {
     TodoListDatabase::class.java,
     "todolist-database"
   ).build()
-
   val tasksDao = db.tasksDao()
+
+  val boredApiService = BoredApi.retrofitService
 
   val tasks = MutableLiveData<List<Task>>(emptyList())
   val tasksSelectedIds = MutableLiveData<List<Int>>(emptyList())
 
   fun updateTasksFromCreator(creatorId: Long) {
     viewModelScope.launch(Dispatchers.IO) {
-      tasks.postValue(tasksDao.getAllFromCreator(creatorId))
+      val userTasks = tasksDao.getAllFromCreator(creatorId)
+      tasks.postValue(userTasks)
+
+      if (userTasks.isEmpty()) {
+        val newTasks = Array<Int>(10, { it })
+          .map {
+            val a = boredApiService.getActivity()
+            val task = Task(0, a.task, Date(), creatorId)
+
+            tasksDao.insertOne(task)
+
+            task
+          }
+
+        tasks.postValue(newTasks)
+      }
     }
   }
 
