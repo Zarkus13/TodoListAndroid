@@ -1,4 +1,4 @@
-package com.cci.todolist
+package com.cci.todolist.users
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -12,7 +12,7 @@ class UsernameDialogFragment: DialogFragment() {
   private var _binding: UsernameDialogBinding? = null
   private lateinit var binding: UsernameDialogBinding
 
-  private val usernameViewModel: UsernameViewModel by activityViewModels()
+  private val userViewModel: UserViewModel by activityViewModels()
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     _binding = UsernameDialogBinding.inflate(
@@ -35,8 +35,9 @@ class UsernameDialogFragment: DialogFragment() {
             .putString("username", binding.usernameInput.text.toString())
             .apply()
 
-          usernameViewModel.username.value =
+          userViewModel.changeUsername(
             binding.usernameInput.text.toString()
+          )
         }
         .create()
 

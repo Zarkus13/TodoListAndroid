@@ -1,22 +1,42 @@
 package com.cci.todolist.tasks
 
+import android.app.Application
+import android.widget.Toast
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.room.Room
+import com.cci.todolist.utils.TodoListDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
-class TasksViewModel: ViewModel() {
+class TasksViewModel(application: Application): AndroidViewModel(application) {
+  val db = Room.databaseBuilder(
+    application.applicationContext,
+    TodoListDatabase::class.java,
+    "todolist-database"
+  ).build()
+
+  val tasksDao = db.tasksDao()
+
   val tasks = MutableLiveData<List<Task>>(emptyList())
   val tasksSelectedIds = MutableLiveData<List<Int>>(emptyList())
 
-  init {
-    tasks.value = listOf<Task>(
-      Task(0, "Manger", Date()),
-      Task(1, "Boire", Date()),
-      Task(2, "Dormir", Date()),
-      Task(3, "Manger", Date()),
-      Task(4, "Se brosser les dents", Date()),
-      Task(5, "Regarder Netflix", Date())
-    )
+  fun updateTasksFromCreator(creatorId: Long) {
+    viewModelScope.launch(Dispatchers.IO) {
+      tasks.postValue(tasksDao.getAllFromCreator(creatorId))
+    }
+  }
+
+  fun createTask(name: String, creatorId: Long) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val t = Task(0, name, Date(), creatorId)
+
+      tasksDao.insertOne(t)
+
+      tasks.postValue(tasks.value?.plus(t))
+    }
   }
 
   fun getTasksSelectedIdsSize(): Int =
@@ -33,6 +53,14 @@ class TasksViewModel: ViewModel() {
   }
 
   fun deleteSelectedTasks() {
+    viewModelScope.launch(Dispatchers.IO) {
+      tasksDao.deleteAll(
+        *((tasksSelectedIds.value ?: emptyList()).map {
+          Task(it, "", Date(), 0)
+        }.toTypedArray())
+      )
+    }
+
     tasks.value =
       (tasks.value ?: emptyList())
         .filterNot { task ->

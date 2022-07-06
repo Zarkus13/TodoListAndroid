@@ -1,9 +1,7 @@
 package com.cci.todolist.tasks
 
-import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
-import com.cci.todolist.TodoListFragmentDirections
 import com.cci.todolist.databinding.TaskListBinding
 
 class TaskViewHolder(

@@ -2,15 +2,18 @@ package com.cci.todolist
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.cci.todolist.databinding.ActivityMainBinding
+import com.cci.todolist.tasks.TasksViewModel
+import com.cci.todolist.users.UsernameDialogFragment
+import com.cci.todolist.users.UserViewModel
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    private val usernameViewModel: UsernameViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
+    private val tasksViewModel: TasksViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,8 +22,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        usernameViewModel.username.observe(this) {
-            binding.usernameTextView.text = it
+        userViewModel.currentUser.observe(this) { user ->
+            if (user != null) {
+                binding.usernameTextView.text = user.username
+                tasksViewModel.updateTasksFromCreator(user.id)
+            }
         }
 
         binding.modifyUsernameButton.setOnClickListener {
@@ -31,10 +37,10 @@ class MainActivity : AppCompatActivity() {
             getPreferences(Context.MODE_PRIVATE)
                 .getString("username", null)
 
-        usernameViewModel.username.value = username
-
         if (username == null) {
             openUsernameDialog()
+        } else {
+            userViewModel.changeUsername(username!!)
         }
     }
 
