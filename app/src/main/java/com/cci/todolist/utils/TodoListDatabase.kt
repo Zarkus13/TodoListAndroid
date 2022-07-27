@@ -12,7 +12,7 @@ import com.cci.todolist.users.UsersDao
   entities = [User::class, Task::class],
   version = 1
 )
-@TypeConverters(RoomDateConverter::class)
+@TypeConverters(DateConverter::class)
 abstract class TodoListDatabase: RoomDatabase() {
   abstract fun usersDao(): UsersDao
 

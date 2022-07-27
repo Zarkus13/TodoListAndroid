@@ -7,8 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.cci.todolist.utils.TodoListDatabase
+import com.cci.todolist.utils.TodoListMoshi.moshi
+import com.cci.todolist.utils.TodoListMoshi.taskAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.Inet4Address
+import java.net.NetworkInterface
 import java.util.*
 
 class TasksViewModel(application: Application): AndroidViewModel(application) {
@@ -17,6 +21,7 @@ class TasksViewModel(application: Application): AndroidViewModel(application) {
     TodoListDatabase::class.java,
     "todolist-database"
   ).build()
+
   val tasksDao = db.tasksDao()
 
   val boredApiService = BoredApi.retrofitService
@@ -24,10 +29,43 @@ class TasksViewModel(application: Application): AndroidViewModel(application) {
   val tasks = MutableLiveData<List<Task>>(emptyList())
   val tasksSelectedIds = MutableLiveData<List<Int>>(emptyList())
 
+  init {
+    viewModelScope.launch(Dispatchers.IO) {
+      val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+
+      val ip =
+        networkInterfaces.toList()
+          .find { it.displayName == "wlan0"}
+          ?.inetAddresses?.toList()
+          ?.find { it is Inet4Address }
+          ?.hostAddress ?: "127.0.0.1"
+
+      viewModelScope.launch(Dispatchers.Main) {
+        Toast.makeText(application, ip, Toast.LENGTH_LONG).show()
+      }
+    }
+  }
+
   fun updateTasksFromCreator(creatorId: Long) {
     viewModelScope.launch(Dispatchers.IO) {
       val userTasks = tasksDao.getAllFromCreator(creatorId)
       tasks.postValue(userTasks)
+
+      if (!userTasks.isEmpty()) {
+        val json = taskAdapter.toJson(userTasks[0])
+
+        viewModelScope.launch(Dispatchers.Main) {
+          Toast.makeText(getApplication(), json.toString(), Toast.LENGTH_LONG).show()
+        }
+
+        println(json.toString())
+
+        val jsonStr = "{\"id\":26,\"name\":\"Configure two-factor authentication on your accounts\",\"creationDate\":1657118016008,\"creatorId\":5}"
+
+        val t = taskAdapter.fromJson(jsonStr)
+
+        println("Task : " + t.toString())
+      }
 
       if (userTasks.isEmpty()) {
         val newTasks = Array<Int>(10, { it })
